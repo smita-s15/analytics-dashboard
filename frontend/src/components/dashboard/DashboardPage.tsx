@@ -1,4 +1,3 @@
-
 import { useDashboardStore } from "@/store/dashboardStore";
 import { useAnalytics, usePrefetchNextPage } from "@/hooks/useAnalytics";
 import { KPIWidgets } from "@/components/dashboard/KPIWidgets";
@@ -12,21 +11,46 @@ import { ExportButton } from "@/components/table/ExportButton";
 import { SortState } from "@/types";
 
 export function DashboardPage() {
-  const { page, limit, search, sort, filters, columns, setPage, setLimit, setSearch, setSort, setFilters, toggleColumn } = useDashboardStore();
+  const {
+    page,
+    limit,
+    search,
+    sort,
+    filters,
+    columns,
+    setPage,
+    setLimit,
+    setSearch,
+    setSort,
+    setFilters,
+    toggleColumn,
+  } = useDashboardStore();
 
-  const queryParams = { page, limit, search, sortBy: sort?.column, sortOrder: sort?.direction, filters };
+  const queryParams = {
+    page,
+    limit,
+    search,
+    sortBy: sort?.column,
+    sortOrder: sort?.direction,
+    filters,
+  };
   const { data, isLoading, isFetching, isError } = useAnalytics(queryParams);
 
   usePrefetchNextPage(queryParams, data?.pagination.totalPages ?? 1);
 
-  function handleSort(newSort: SortState | null) { setSort(newSort); setPage(1); }
+  function handleSort(newSort: SortState | null) {
+    setSort(newSort);
+    setPage(1);
+  }
 
   if (isError) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
         <div className="text-center">
           <p className="text-lg font-semibold">Something went wrong</p>
-          <p className="text-sm mt-1">Failed to load analytics data. Please refresh the page.</p>
+          <p className="text-sm mt-1">
+            Failed to load analytics data. Please refresh the page.
+          </p>
         </div>
       </div>
     );
@@ -43,7 +67,9 @@ export function DashboardPage() {
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-base font-semibold text-slate-800 dark:text-white">Keyword Data</h2>
+              <h2 className="text-base font-semibold text-slate-800 dark:text-white">
+                Keyword Data
+              </h2>
               {data?.pagination && (
                 <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-medium">
                   {data.pagination.total.toLocaleString()} records
@@ -57,7 +83,16 @@ export function DashboardPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <ExportButton records={data?.records ?? []} columns={columns} />
+              <ExportButton
+                columns={columns}
+                queryParams={{
+                  search,
+                  sortBy: sort?.column,
+                  sortOrder: sort?.direction,
+                  filters,
+                }}
+                totalRecords={data?.pagination.total ?? 0}
+              />
               <ColumnPicker columns={columns} onToggle={toggleColumn} />
             </div>
           </div>
@@ -66,12 +101,23 @@ export function DashboardPage() {
         </div>
 
         <div className="p-4">
-          <DataTable records={data?.records ?? []} columns={columns} sort={sort} onSort={handleSort} isLoading={isLoading} isFetching={isFetching && !isLoading} />
+          <DataTable
+            records={data?.records ?? []}
+            columns={columns}
+            sort={sort}
+            onSort={handleSort}
+            isLoading={isLoading}
+            isFetching={isFetching && !isLoading}
+          />
         </div>
 
         {data?.pagination && (
           <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700">
-            <Pagination meta={data.pagination} onPageChange={setPage} onLimitChange={setLimit} />
+            <Pagination
+              meta={data.pagination}
+              onPageChange={setPage}
+              onLimitChange={setLimit}
+            />
           </div>
         )}
       </div>

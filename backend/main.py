@@ -111,7 +111,7 @@ def _compute_kpis(records: list[KeywordRecord]) -> KPIData:
 @app.get("/api/analytics", response_model=AnalyticsResponse)
 async def get_analytics(
     page: int = Query(1, ge=1),
-    limit: int = Query(50, ge=10, le=500),
+    limit: int = Query(50, ge=10, le=70000),
     search: Optional[str] = Query(None),
     sortBy: Optional[str] = Query(None),
     sortOrder: str = Query("asc"),
