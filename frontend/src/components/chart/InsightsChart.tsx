@@ -1,18 +1,27 @@
-
 import { useState, useCallback } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { ChartDataPoint, Annotation } from "@/types";
-import type { MouseHandlerDataParam } from "recharts/types/synchronisation/types";
 import { ANNOTATION_TYPES } from "@/lib/mockData";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { AnnotationForm } from "./AnnotationForm";
-import { useAnnotations, useCreateAnnotation, useUpdateAnnotation, useDeleteAnnotation } from "@/hooks/useAnalytics";
+import {
+  useAnnotations,
+  useCreateAnnotation,
+  useUpdateAnnotation,
+  useDeleteAnnotation,
+} from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
 
 // ─── Metric config ────────────────────────────────────────────────────────────
@@ -26,11 +35,41 @@ interface MetricConfig {
 }
 
 const METRICS: MetricConfig[] = [
-  { key: "clicks",         label: "Clicks",       color: "#3b82f6", yAxisId: "left",  formatter: (v) => v.toLocaleString() },
-  { key: "impressions",    label: "Impressions",  color: "#8b5cf6", yAxisId: "right", formatter: (v) => `${(v / 1000).toFixed(0)}k` },
-  { key: "ctr",            label: "CTR (%)",      color: "#10b981", yAxisId: "left",  formatter: (v) => `${v.toFixed(1)}%` },
-  { key: "avgRank",        label: "Avg Rank",     color: "#f59e0b", yAxisId: "left",  formatter: (v) => v.toFixed(1) },
-  { key: "activeUsers",    label: "Active Users", color: "#ec4899", yAxisId: "left",  formatter: (v) => v.toLocaleString() },
+  {
+    key: "clicks",
+    label: "Clicks",
+    color: "#3b82f6",
+    yAxisId: "left",
+    formatter: (v) => v.toLocaleString(),
+  },
+  {
+    key: "impressions",
+    label: "Impressions",
+    color: "#8b5cf6",
+    yAxisId: "right",
+    formatter: (v) => `${(v / 1000).toFixed(0)}k`,
+  },
+  {
+    key: "ctr",
+    label: "CTR (%)",
+    color: "#10b981",
+    yAxisId: "left",
+    formatter: (v) => `${v.toFixed(1)}%`,
+  },
+  {
+    key: "avgRank",
+    label: "Avg Rank",
+    color: "#f59e0b",
+    yAxisId: "left",
+    formatter: (v) => v.toFixed(1),
+  },
+  {
+    key: "activeUsers",
+    label: "Active Users",
+    color: "#ec4899",
+    yAxisId: "left",
+    formatter: (v) => v.toLocaleString(),
+  },
 ];
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
@@ -43,7 +82,13 @@ interface CustomTooltipProps {
   annotations: Annotation[];
 }
 
-function CustomTooltip({ active, payload, label, visibleMetrics, annotations }: CustomTooltipProps) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+  visibleMetrics,
+  annotations,
+}: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
   const dateAnnotations = annotations.filter((a) => a.date === label);
   return (
@@ -55,21 +100,38 @@ function CustomTooltip({ active, payload, label, visibleMetrics, annotations }: 
         const metric = METRICS.find((m) => m.key === entry.dataKey);
         if (!metric || !visibleMetrics.has(metric.key)) return null;
         return (
-          <div key={entry.dataKey} className="flex items-center justify-between gap-6 py-0.5">
+          <div
+            key={entry.dataKey}
+            className="flex items-center justify-between gap-6 py-0.5"
+          >
             <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: metric.color }} />
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: metric.color }}
+              />
               {metric.label}
             </span>
-            <span className="text-xs font-bold text-slate-900 dark:text-white">{metric.formatter(entry.value)}</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              {metric.formatter(entry.value)}
+            </span>
           </div>
         );
       })}
       {dateAnnotations.map((ann) => {
         const type = ANNOTATION_TYPES.find((t) => t.value === ann.type);
         return (
-          <div key={ann.id} className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-            <p className="text-xs font-semibold" style={{ color: type?.color }}>{ann.title}</p>
-            {ann.description && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{ann.description}</p>}
+          <div
+            key={ann.id}
+            className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700"
+          >
+            <p className="text-xs font-semibold" style={{ color: type?.color }}>
+              {ann.title}
+            </p>
+            {ann.description && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                {ann.description}
+              </p>
+            )}
           </div>
         );
       })}
@@ -85,9 +147,14 @@ interface InsightsChartProps {
 }
 
 export function InsightsChart({ data, isLoading }: InsightsChartProps) {
-  const [visibleMetrics, setVisibleMetrics] = useState(new Set(["clicks", "impressions", "ctr"]));
-  const [modalMode, setModalMode] = useState<"create" | "edit" | "view" | null>(null);
-  const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
+  const [visibleMetrics, setVisibleMetrics] = useState(
+    new Set(["clicks", "impressions", "ctr"]),
+  );
+  const [modalMode, setModalMode] = useState<"create" | "edit" | "view" | null>(
+    null,
+  );
+  const [selectedAnnotation, setSelectedAnnotation] =
+    useState<Annotation | null>(null);
   const [clickedDate, setClickedDate] = useState<string | null>(null);
 
   const { data: annotations = [] } = useAnnotations();
@@ -98,8 +165,9 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
   const toggleMetric = (key: string) => {
     setVisibleMetrics((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) { if (next.size > 1) next.delete(key); }
-      else next.add(key);
+      if (next.has(key)) {
+        if (next.size > 1) next.delete(key);
+      } else next.add(key);
       return next;
     });
   };
@@ -109,7 +177,7 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
     setModalMode("view");
   }, []);
 
-  const handleChartClick = useCallback((e: MouseHandlerDataParam) => {
+  const handleChartClick = useCallback((e: any) => {
     if (e?.activeLabel != null) {
       setClickedDate(String(e.activeLabel));
       setModalMode("create");
@@ -117,7 +185,11 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
   }, []);
 
   if (isLoading || !data) {
-    return <div className="bg-white rounded-xl border border-slate-200 p-6"><Skeleton className="h-72 w-full" /></div>;
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <Skeleton className="h-72 w-full" />
+      </div>
+    );
   }
 
   return (
@@ -125,13 +197,20 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 className="text-base font-semibold text-slate-800 dark:text-white">Traffic Insights</h2>
+          <h2 className="text-base font-semibold text-slate-800 dark:text-white">
+            Traffic Insights
+          </h2>
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400 dark:text-slate-500">
-              {annotations.length} annotation{annotations.length !== 1 ? "s" : ""}
+              {annotations.length} annotation
+              {annotations.length !== 1 ? "s" : ""}
             </span>
             <button
-              onClick={() => { setSelectedAnnotation(null); setClickedDate(null); setModalMode("create"); }}
+              onClick={() => {
+                setSelectedAnnotation(null);
+                setClickedDate(null);
+                setModalMode("create");
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
             >
               <Plus size={13} /> Add Annotation
@@ -149,13 +228,21 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
                 "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all",
                 visibleMetrics.has(m.key)
                   ? "text-white shadow-sm"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200",
               )}
-              style={visibleMetrics.has(m.key) ? { backgroundColor: m.color } : undefined}
+              style={
+                visibleMetrics.has(m.key)
+                  ? { backgroundColor: m.color }
+                  : undefined
+              }
             >
               <span
                 className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: visibleMetrics.has(m.key) ? "rgba(255,255,255,0.6)" : m.color }}
+                style={{
+                  backgroundColor: visibleMetrics.has(m.key)
+                    ? "rgba(255,255,255,0.6)"
+                    : m.color,
+                }}
               />
               {m.label}
             </button>
@@ -197,7 +284,12 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
                 content={(props) => (
                   <CustomTooltip
                     active={props.active}
-                    payload={props.payload as unknown as Array<{ dataKey: string; value: number }>}
+                    payload={
+                      props.payload as unknown as Array<{
+                        dataKey: string;
+                        value: number;
+                      }>
+                    }
                     label={props.label as string}
                     visibleMetrics={visibleMetrics}
                     annotations={annotations}
@@ -255,9 +347,16 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
                   onClick={() => handleAnnotationClick(ann)}
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-100 dark:border-slate-700"
                 >
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: type?.color }} />
-                  <span className="text-slate-500 dark:text-slate-400">{format(parseISO(ann.date), "d MMM")}</span>
-                  <span className="font-medium text-slate-700 dark:text-slate-200">{ann.title}</span>
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: type?.color }}
+                  />
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {format(parseISO(ann.date), "d MMM")}
+                  </span>
+                  <span className="font-medium text-slate-700 dark:text-slate-200">
+                    {ann.title}
+                  </span>
                 </button>
               );
             })}
@@ -266,10 +365,17 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
       </div>
 
       {/* Create annotation modal */}
-      <Modal open={modalMode === "create"} onClose={() => setModalMode(null)} title="Add Annotation">
+      <Modal
+        open={modalMode === "create"}
+        onClose={() => setModalMode(null)}
+        title="Add Annotation"
+      >
         <AnnotationForm
           defaultDate={clickedDate ?? undefined}
-          onSubmit={async (d) => { await createMutation.mutateAsync(d); setModalMode(null); }}
+          onSubmit={async (d) => {
+            await createMutation.mutateAsync(d);
+            setModalMode(null);
+          }}
           onCancel={() => setModalMode(null)}
           isLoading={createMutation.isPending}
         />
@@ -284,13 +390,21 @@ export function InsightsChart({ data, isLoading }: InsightsChartProps) {
         {selectedAnnotation && (
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">{selectedAnnotation.title}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                {selectedAnnotation.title}
+              </p>
               <p className="text-xs text-slate-400 mt-0.5">
                 {format(parseISO(selectedAnnotation.date), "MMMM d, yyyy")} ·{" "}
-                {ANNOTATION_TYPES.find((t) => t.value === selectedAnnotation.type)?.label}
+                {
+                  ANNOTATION_TYPES.find(
+                    (t) => t.value === selectedAnnotation.type,
+                  )?.label
+                }
               </p>
               {selectedAnnotation.description && (
-                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">{selectedAnnotation.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
+                  {selectedAnnotation.description}
+                </p>
               )}
             </div>
             <div className="flex justify-between pt-2">
