@@ -1,25 +1,34 @@
-# React
+# ─── Frontend ─────────────────────────────────────────────────────────────────
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+# Environment files
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.env.development
+frontend/.env.production
 
-# Python
+# ─── Backend ──────────────────────────────────────────────────────────────────
 backend/__pycache__/
+backend/**/__pycache__/
 backend/.venv/
 backend/venv/
 backend/env/
-
-# Environment files
-frontend/.env
+backend/*.pyc
 backend/.env
 
-# Logs
+# ─── Logs ─────────────────────────────────────────────────────────────────────
 *.log
+npm-debug.log*
 
-# IDE
+# ─── IDE ──────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS
+# ─── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
